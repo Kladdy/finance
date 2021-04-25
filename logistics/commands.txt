@@ -1,0 +1,25 @@
+Miniforge3:
+-------------------------------------------
+If you'd prefer that conda's base environment not be activated on startup, 
+   set the auto_activate_base parameter to false: 
+
+conda config --set auto_activate_base false
+-------------------------------------------
+
+Conda:
+-------------------------------------------
+# To activate this environment, use
+#
+#     $ conda activate tf-finance
+#
+# To deactivate an active environment, use
+#
+#     $ conda deactivate
+-------------------------------------------
+
+TensorFlow:
+-------------------------------------------
+For those having issues with tf.keras.models.load_model about a failed 
+to decode error: Try downgrading to h5py to the 2.10.0 wheel file that 
+was packaged with this alpha release (pip install ~/path to h5py.whl)
+-------------------------------------------

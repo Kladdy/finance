@@ -1,0 +1,5 @@
+TensorFlow Acceleration on Mac: 
+https://blog.tensorflow.org/2020/11/accelerating-tensorflow-performance-on-mac.html
+
+Conda installation of TF Acceleration:
+https://github.com/apple/tensorflow_macos/issues/153
