@@ -17,6 +17,15 @@ Conda:
 #     $ conda deactivate
 -------------------------------------------
 
+Python:
+-------------------------------------------
+Run script:
+    /Users/sigge/miniforge3/envs/tf-finance/bin/python script.py
+
+Install package:
+    /Users/sigge/miniforge3/envs/tf-finance/bin/python -m pip install ...
+-------------------------------------------
+
 TensorFlow:
 -------------------------------------------
 For those having issues with tf.keras.models.load_model about a failed 
