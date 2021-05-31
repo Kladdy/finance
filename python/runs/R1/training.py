@@ -1,3 +1,4 @@
+from tensorflow.python.keras import activations
 from toolbox import logger, load_training_data, load_validation_data
 import numpy as np
 import tensorflow as tf
@@ -33,20 +34,19 @@ training_dataset = tf.data.Dataset.from_tensor_slices((training_data, training_l
 validation_dataset = tf.data.Dataset.from_tensor_slices((validation_data, validation_labels))
 
 # Put into batches
-training_dataset = training_dataset.batch(batch_size)
+training_dataset = training_dataset.shuffle(100).batch(batch_size)
 validation_dataset = validation_dataset.batch(batch_size)
 
-#
-model = tf.keras.Sequential([
-    tf.keras.layers.Flatten(input_shape=(10,)),
-    tf.keras.layers.Dense(1280, activation='relu'),
-    tf.keras.layers.Dense(10),
-    tf.keras.layers.Dense(1)
-])
+# Create model
+model = tf.keras.Sequential()
+
+model.add(tf.keras.layers.Flatten(input_shape=(data_length,)))
+model.add(tf.keras.layers.Dense(1280, activation='relu'))
+model.add(tf.keras.layers.Dense(10, activation='relu'))
+model.add(tf.keras.layers.Dense(1))
 
 model.compile(optimizer=tf.keras.optimizers.Adam(),
               loss=tf.keras.losses.MeanAbsoluteError())
 
-model.fit(training_dataset, epochs=10)
-
-model.evaluate(validation_dataset)
+model.fit(x=training_dataset, validation_data=validation_dataset,
+            epochs=10)
