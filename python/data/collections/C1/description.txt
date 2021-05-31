@@ -1,0 +1,4 @@
+C1:
+    Collects the last month's data in 15m/30m/60m/90m/1d intervals for the index "S&P 100" (as of March 22 2021)
+
+    https://en.wikipedia.org/wiki/S%26P_100
