@@ -17,7 +17,7 @@ mkdir("saved_data")
 ticker_symbol_list = []
 
 # Read index csv to get ticker names
-with open('C1_index_components.csv', newline="", encoding='utf-8-sig') as csvfile:
+with open(f'{collector_name}_index_components.csv', newline="", encoding='utf-8-sig') as csvfile:
         reader = csv.reader(csvfile, delimiter=";")
         for row in reader:
             ticker_symbol_list.append(row[0]) # Append ticker symbol
