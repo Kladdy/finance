@@ -9,7 +9,7 @@ import hashlib
 from math import floor
 
 # Parse arguments
-parser = argparse.ArgumentParser(description='Prepare data for R1.')
+parser = argparse.ArgumentParser(description='Prepare data')
 parser.add_argument('collector', type=str, help='the collector, ie C1, C2...')
 parser.add_argument('period', type=str, help='the period, ie 1mo, 1y...')
 parser.add_argument('interval', type=str, help='the interval, ie 1m, 30m...')
@@ -83,7 +83,7 @@ for j, index in enumerate(data_indicies):
         labels[idx] = label_tmp_rel
 
         idx += 1 
-        
+
 # Create a shuffled index array based on the collected data file name
 shuffeled_indicies = np.arange(data_amount)
 hash_string = int(hashlib.sha256(collected_data_file.encode('utf-8')).hexdigest(), 16) % 10**9 # Compute hash

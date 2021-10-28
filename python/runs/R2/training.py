@@ -1,13 +1,14 @@
+import os
 from tensorflow.python.keras import activations, callbacks
 from toolbox import logger, load_training_data, load_validation_data, mkdir
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 import argparse
-from constants import run_name, data_folder_name, model_folder_name
+from constants import run_name, model_folder_name
 
 # Parse arguments
-parser = argparse.ArgumentParser(description='Prepare data for R1.')
+parser = argparse.ArgumentParser(description='Run training')
 parser.add_argument('collector', type=str, help='the collector, ie C1, C2...')
 parser.add_argument('period', type=str, help='the period, ie 1mo, 1y...')
 parser.add_argument('interval', type=str, help='the interval, ie 1m, 30m...')
@@ -30,7 +31,7 @@ logger.INFO(f"Training {run_name}...")
 mkdir(model_folder_name)
 
 # Define constants
-model_filename = f"model_{run_name}_{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}"
+model_filename = f"model_{run_name}_{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}.h5"
 model_filepath = f"{model_folder_name}/{model_filename}"
 
 # Load training and validation data and convert to dataset tensors
@@ -52,13 +53,17 @@ model.add(tf.keras.layers.Dense(1280, activation='relu'))
 model.add(tf.keras.layers.Dense(10, activation='relu'))
 model.add(tf.keras.layers.Dense(1))
 
-model.compile(optimizer=tf.keras.optimizers.Adam(),
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.000001),
               loss=tf.keras.losses.MeanAbsoluteError())
 
-# Checkpoints
-modelCheckpoint = ModelCheckpoint(model_filepath, save_best_only=True)
+# Callbacks
+modelCheckpoint = ModelCheckpoint(model_filepath, save_best_only=True, monitor='val_loss', 
+                                    verbose=0, mode='auto', save_weights_only=False)
 modelCallbacks = [modelCheckpoint]
 
 # Perform the fit
 model.fit(x=training_dataset, validation_data=validation_dataset,
-            callbacks=modelCallbacks, epochs=10)
+            callbacks=modelCallbacks, epochs=2)
+
+# Evaluate the model
+os.system(f"python evaluation.py {collector} {period} {interval} {start} {stop} {data_length} {batch_size}")

@@ -4,6 +4,7 @@ run_name = "R2"
 collector_folder_path = "../../data/collections"
 data_folder_name = "saved_data"
 model_folder_name = "saved_models"
+results_folder_name = "results"
 
 # Training/validation/testing split
 training_split = 0.75
