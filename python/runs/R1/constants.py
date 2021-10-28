@@ -2,6 +2,8 @@
 # Constants
 run_name = "R1"
 collector_folder_path = "../../data/collections"
+data_folder_name = "saved_data"
+model_folder_name = "saved_models"
 
 # Training/validation/testing split
 training_split = 0.75

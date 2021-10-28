@@ -1,7 +1,7 @@
 import argparse
 from os import close
-from toolbox import logger
-from constants import run_name, collector_folder_path, training_split, validation_split, testing_split
+from toolbox import logger, mkdir
+from constants import run_name, collector_folder_path, training_split, validation_split, testing_split, data_folder_name
 import csv
 import numpy as np
 import pandas as pd
@@ -26,6 +26,8 @@ stop = args.stop
 data_length = args.data_length
 
 logger.INFO(f"Preparing data for {run_name}...")
+
+mkdir(data_folder_name)
 
 # Define constants
 collected_data_file = f"{collector}_period{period}_inteval{interval}_start{start}_end{stop}.pkl"
@@ -104,7 +106,7 @@ testing_labels = labels[testing_indicies]
 
 # # Save data as npz
 npz_file = f"{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}.npz"
-npz_filepath = f"saved_data/{npz_file}"
+npz_filepath = f"{data_folder_name}/{npz_file}"
 np.savez(npz_filepath, training_data=training_data, training_labels=training_labels, 
             validation_data=validation_data, validation_labels=validation_labels,
             testing_data=testing_data, testing_labels=testing_labels)

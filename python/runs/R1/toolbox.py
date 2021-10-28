@@ -4,6 +4,7 @@ import os
 import log
 import pandas as pd
 import numpy as np
+from constants import data_folder_name
 
 logger = log.Log("DEBUG")
 
@@ -19,7 +20,7 @@ def load_data(collector, period, interval, start, stop, data_length, dataset):
     logger.INFO(f"Loading {dataset} dataset...")
 
     npz_file = f"{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}.npz"
-    npz_filepath = f"saved_data/{npz_file}"
+    npz_filepath = f"{data_folder_name}/{npz_file}"
     with np.load(npz_filepath) as npz:
         data = npz[f'{dataset}_data']
         labels = npz[f'{dataset}_labels']

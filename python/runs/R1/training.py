@@ -1,9 +1,10 @@
-from tensorflow.python.keras import activations
-from toolbox import logger, load_training_data, load_validation_data
+from tensorflow.python.keras import activations, callbacks
+from toolbox import logger, load_training_data, load_validation_data, mkdir
 import numpy as np
 import tensorflow as tf
+from tensorflow.keras.callbacks import ModelCheckpoint
 import argparse
-from constants import run_name
+from constants import run_name, data_folder_name, model_folder_name
 
 # Parse arguments
 parser = argparse.ArgumentParser(description='Prepare data for R1.')
@@ -25,6 +26,12 @@ data_length = args.data_length
 batch_size = args.batch_size
 
 logger.INFO(f"Training {run_name}...")
+
+mkdir(model_folder_name)
+
+# Define constants
+model_filename = f"model_{run_name}_{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}"
+model_filepath = f"{model_folder_name}/{model_filename}"
 
 # Load training and validation data and convert to dataset tensors
 training_data, training_labels = load_training_data(collector, period, interval, start, stop, data_length)
@@ -48,5 +55,10 @@ model.add(tf.keras.layers.Dense(1))
 model.compile(optimizer=tf.keras.optimizers.Adam(),
               loss=tf.keras.losses.MeanAbsoluteError())
 
+# Checkpoints
+modelCheckpoint = ModelCheckpoint(model_filepath, save_best_only=True)
+modelCallbacks = [modelCheckpoint]
+
+# Perform the fit
 model.fit(x=training_dataset, validation_data=validation_dataset,
-            epochs=10)
+            callbacks=modelCallbacks, epochs=10)

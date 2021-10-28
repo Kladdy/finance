@@ -1,0 +1,3 @@
+
+Example
+    python training.py C1 1mo 90m 2021.04.29 2021.05.28 10 16
