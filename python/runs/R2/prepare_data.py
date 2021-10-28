@@ -49,7 +49,8 @@ logger.INFO(f"Sample amount: {sample_amount}")
 # Calculate the amount of data that will be produced
 # As sample_length samples are needed, the first few
 # days will not have any historical data.
-data_amount_per_ticker = sample_amount - data_length
+# Also, for R2, we subtract one additional due to needing to use one more to get absolute value
+data_amount_per_ticker = sample_amount - data_length - 1
 
 # Create numpy arrays for data and labels
 closing_values = np.zeros((ticker_amount, sample_amount))
@@ -63,19 +64,26 @@ data_amount = data_amount_per_ticker * ticker_amount
 data = np.zeros((data_amount, data_length))
 labels = np.zeros((data_amount))
 
-data_indicies = np.arange(data_length, sample_amount)
+# For R2, we need to start at data_length + 1 as we need one extra to take relative difference
+data_indicies = np.arange(data_length + 1, sample_amount)
 
 idx = 0
 for j, index in enumerate(data_indicies):
     for i, ticker in enumerate(ticker_symbols):
-        data_tmp = closing_values[i, (index-data_length):index]
+        # For R2, we need to load one more data. This is used to calculate relative difference (hence data_length + 1)
+        data_tmp = closing_values[i, (index - (data_length + 1)):index]
         label_tmp = closing_values[i, index] # Get the j:th value, which is the closing value of interest
 
-        data[idx, :] = data_tmp
-        labels[idx] = label_tmp
+        
+        # For R2, we take the relative difference between the values
+        label_tmp_rel = (label_tmp - data_tmp[-1]) / data_tmp[-1]
+        data_tmp_rel = np.array([(data_tmp[i] - data_tmp[i-1]) / data_tmp[i-1] for i in range(1, data_length+1)])
+
+        data[idx, :] = data_tmp_rel
+        labels[idx] = label_tmp_rel
 
         idx += 1 
-
+        
 # Create a shuffled index array based on the collected data file name
 shuffeled_indicies = np.arange(data_amount)
 hash_string = int(hashlib.sha256(collected_data_file.encode('utf-8')).hexdigest(), 16) % 10**9 # Compute hash
