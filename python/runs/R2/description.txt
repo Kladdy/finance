@@ -1,0 +1,8 @@
+About
+    This run uses the relative change in the stock value as a value to be predicted. 
+    This makes it so that companies with large absolute values of the stock price are not
+    significantly different from the smaller companies. 
+
+Example
+    python prepare_data.py C1 1mo 90m 2021.04.29 2021.05.28 10
+    python training.py C1 1mo 90m 2021.04.29 2021.05.28 10 16
