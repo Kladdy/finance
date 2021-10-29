@@ -46,3 +46,4 @@ predictions = np.squeeze(predictions) # Removes the axis of length 1
 print("testing labels: ", testing_labels)
 print("predictions: ", predictions)
 print("Difference: ", testing_labels - predictions)
+print("Difference relative: ", np.divide((testing_labels - predictions), predictions))

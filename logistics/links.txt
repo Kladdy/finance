@@ -6,3 +6,6 @@ https://github.com/apple/tensorflow_macos/issues/153
 
 Yahoo finance module:
 https://pypi.org/project/yfinance/
+
+If predictions keeps on being the same every time
+https://datascience.stackexchange.com/questions/21955/tensorflow-regression-model-giving-same-prediction-every-time
