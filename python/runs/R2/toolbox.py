@@ -25,13 +25,24 @@ def load_data(collector, period, interval, start, stop, data_length, dataset):
         data = npz[f'{dataset}_data']
         labels = npz[f'{dataset}_labels']
 
+        if dataset == 'testing':
+            testing_tickers = npz['testing_tickers']
+            testing_last_data_values = npz['testing_last_data_values']
+
     # Remove any nans
     nan_idx = [idx[0] for idx in np.argwhere(np.isnan(data))]
     data = np.delete(data, nan_idx, axis=0)
     labels = np.delete(labels, nan_idx)
-    logger.INFO(f"Removed {len(nan_idx)} nan values of of {labels.shape} in total")
 
-    return data, labels
+    logger.INFO(f"Removed {len(nan_idx)} nan values of of {len(labels)} in total")
+
+    if dataset == 'testing':
+        testing_tickers = np.delete(testing_tickers, nan_idx)
+        testing_last_data_values = np.delete(testing_last_data_values, nan_idx)
+        
+        return data, labels, testing_tickers, testing_last_data_values
+    else:
+        return data, labels
 
 def load_training_data(collector, period, interval, start, stop, data_length):
     return load_data(collector, period, interval, start, stop, data_length, "training")

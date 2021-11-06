@@ -64,6 +64,10 @@ data_amount = data_amount_per_ticker * ticker_amount
 data = np.zeros((data_amount, data_length))
 labels = np.zeros((data_amount))
 
+# Save ticker symbol and the last data value (for evaluating)
+tickers = np.empty((data_amount), dtype="S10") # S10 means string of length 10
+last_data_values = np.zeros((data_amount))
+
 # For R2, we need to start at data_length + 1 as we need one extra to take relative difference
 data_indicies = np.arange(data_length + 1, sample_amount)
 
@@ -74,13 +78,15 @@ for j, index in enumerate(data_indicies):
         data_tmp = closing_values[i, (index - (data_length + 1)):index]
         label_tmp = closing_values[i, index] # Get the j:th value, which is the closing value of interest
 
-        
         # For R2, we take the relative difference between the values
         label_tmp_rel = (label_tmp - data_tmp[-1]) / data_tmp[-1]
         data_tmp_rel = np.array([(data_tmp[i] - data_tmp[i-1]) / data_tmp[i-1] for i in range(1, data_length+1)])
 
         data[idx, :] = data_tmp_rel
         labels[idx] = label_tmp_rel
+
+        tickers[idx] = ticker
+        last_data_values[idx] = data_tmp[-1]
 
         idx += 1 
 
@@ -112,9 +118,14 @@ validation_labels = labels[validation_indicies]
 testing_data = data[testing_indicies, :]
 testing_labels = labels[testing_indicies]
 
+testing_tickers = tickers[testing_indicies]
+print(tickers)
+testing_last_data_values = last_data_values[testing_indicies]
+
 # # Save data as npz
 npz_file = f"{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}.npz"
 npz_filepath = f"{data_folder_name}/{npz_file}"
 np.savez(npz_filepath, training_data=training_data, training_labels=training_labels, 
             validation_data=validation_data, validation_labels=validation_labels,
-            testing_data=testing_data, testing_labels=testing_labels)
+            testing_data=testing_data, testing_labels=testing_labels,
+            testing_tickers=testing_tickers, testing_last_data_values=testing_last_data_values)

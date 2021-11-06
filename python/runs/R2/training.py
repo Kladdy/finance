@@ -1,5 +1,6 @@
 import os
 from tensorflow.python.keras import activations, callbacks
+from tensorflow.python.ops.gen_batch_ops import batch
 from toolbox import logger, load_training_data, load_validation_data, mkdir
 import numpy as np
 import tensorflow as tf
@@ -38,6 +39,10 @@ model_filepath = f"{model_folder_name}/{model_filename}"
 training_data, training_labels = load_training_data(collector, period, interval, start, stop, data_length)
 validation_data, validation_labels = load_validation_data(collector, period, interval, start, stop, data_length)
 
+# Expand dims (if Conv1D)
+# training_data = np.expand_dims(training_data, 2)
+# validation_data = np.expand_dims(validation_data, 2)
+
 training_dataset = tf.data.Dataset.from_tensor_slices((training_data, training_labels))
 validation_dataset = tf.data.Dataset.from_tensor_slices((validation_data, validation_labels))
 
@@ -48,8 +53,16 @@ validation_dataset = validation_dataset.batch(batch_size)
 # Create model
 model = tf.keras.Sequential()
 
+# model.add(tf.keras.layers.Conv1D(128, 3, padding='same', input_shape=(data_length, 1)))
+# model.add(tf.keras.layers.Conv1D(128, 3, padding='same'))
+# model.add(tf.keras.layers.Conv1D(128, 3, padding='same'))
+# model.add(tf.keras.layers.Conv1D(128, 3, padding='same'))
+# model.add(tf.keras.layers.Flatten())
 model.add(tf.keras.layers.Flatten(input_shape=(data_length,)))
-model.add(tf.keras.layers.Dense(1280, activation='relu'))
+model.add(tf.keras.layers.Dense(128, activation='relu'))
+model.add(tf.keras.layers.Dense(128, activation='relu'))
+model.add(tf.keras.layers.Dense(128, activation='relu'))
+model.add(tf.keras.layers.Dense(128, activation='relu'))
 model.add(tf.keras.layers.Dense(10, activation='relu'))
 model.add(tf.keras.layers.Dense(1))
 
