@@ -2,6 +2,8 @@ import os
 from tensorflow.python.keras import activations, callbacks
 from tensorflow.python.ops.gen_batch_ops import batch
 from toolbox import logger, load_training_data, load_validation_data, mkdir
+import wandb
+from wandb.keras import WandbCallback
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
@@ -32,6 +34,8 @@ logger.INFO(f"Training {run_name}...")
 mkdir(model_folder_name)
 
 # Define constants
+learning_rate=0.000001
+epochs = 2
 model_filename = f"model_{run_name}_{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}.h5"
 model_filepath = f"{model_folder_name}/{model_filename}"
 
@@ -50,6 +54,22 @@ validation_dataset = tf.data.Dataset.from_tensor_slices((validation_data, valida
 training_dataset = training_dataset.shuffle(100).batch(batch_size)
 validation_dataset = validation_dataset.batch(batch_size)
 
+# Initialize wandb
+wandb.init(project="finance", entity="sigfid")
+wandb.config = {
+  learning_rate: learning_rate,
+  epochs: epochs,
+  collector: collector,
+  period: period,
+  interval: interval,
+  start: start,
+  stop: stop,
+  data_length: data_length,
+  batch_size: batch_size
+
+}
+
+
 # Create model
 model = tf.keras.Sequential()
 
@@ -66,17 +86,18 @@ model.add(tf.keras.layers.Dense(128, activation='relu'))
 model.add(tf.keras.layers.Dense(10, activation='relu'))
 model.add(tf.keras.layers.Dense(1))
 
-model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.000001),
+model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate),
               loss=tf.keras.losses.MeanAbsoluteError())
 
 # Callbacks
 modelCheckpoint = ModelCheckpoint(model_filepath, save_best_only=True, monitor='val_loss', 
                                     verbose=0, mode='auto', save_weights_only=False)
-modelCallbacks = [modelCheckpoint]
+wandbCallback = WandbCallback()
+callback_list = [modelCheckpoint, wandbCallback]
 
 # Perform the fit
 model.fit(x=training_dataset, validation_data=validation_dataset,
-            callbacks=modelCallbacks, epochs=2)
+            callbacks=callback_list, epochs=epochs)
 
 # Evaluate the model
 os.system(f"python evaluation.py {collector} {period} {interval} {start} {stop} {data_length} {batch_size}")
