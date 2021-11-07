@@ -30,7 +30,7 @@ logger.INFO(f"Preparing data for {run_name}...")
 mkdir(data_folder_name)
 
 # Define constants
-collected_data_file = f"{collector}_period{period}_inteval{interval}_start{start}_end{stop}.pkl"
+collected_data_file = f"{collector}_period{period}_interval{interval}_start{start}_end{stop}.pkl"
 collected_data_filepath = f"{collector_folder_path}/{collector}/saved_data/{collected_data_file}"
 
 # Load collected .pkl data
@@ -123,7 +123,7 @@ print(tickers)
 testing_last_data_values = last_data_values[testing_indicies]
 
 # # Save data as npz
-npz_file = f"{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}.npz"
+npz_file = f"{collector}_period{period}_interval{interval}_start{start}_end{stop}_datalength{data_length}.npz"
 npz_filepath = f"{data_folder_name}/{npz_file}"
 np.savez(npz_filepath, training_data=training_data, training_labels=training_labels, 
             validation_data=validation_data, validation_labels=validation_labels,

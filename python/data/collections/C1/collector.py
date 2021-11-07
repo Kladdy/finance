@@ -38,11 +38,11 @@ start_date_str = numpy_datetime_to_date(start_datetime)
 end_date_str = numpy_datetime_to_date(end_datetime)
 
 # Save to .csv
-csv_file_name = f"{collector_name}_period{period}_inteval{interval}_start{start_date_str}_end{end_date_str}.csv"
+csv_file_name = f"{collector_name}_period{period}_interval{interval}_start{start_date_str}_end{end_date_str}.csv"
 data.to_csv(f"{saved_data_dir}/{csv_file_name}")
 
 # Save to .pkl
-pkl_file_name = f"{collector_name}_period{period}_inteval{interval}_start{start_date_str}_end{end_date_str}.pkl"
+pkl_file_name = f"{collector_name}_period{period}_interval{interval}_start{start_date_str}_end{end_date_str}.pkl"
 data.to_pickle(f"{saved_data_dir}/{pkl_file_name}")
 
 # # Iterate over each ticker

@@ -30,7 +30,7 @@ logger.INFO(f"Training {run_name}...")
 mkdir(model_folder_name)
 
 # Define constants
-model_filename = f"model_{run_name}_{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}"
+model_filename = f"model_{run_name}_{collector}_period{period}_interval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}"
 model_filepath = f"{model_folder_name}/{model_filename}"
 
 # Load training and validation data and convert to dataset tensors

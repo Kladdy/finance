@@ -19,7 +19,7 @@ def load_data(collector, period, interval, start, stop, data_length, dataset):
     assert dataset in ["training", "validation", "testing"]
     logger.INFO(f"Loading {dataset} dataset...")
 
-    npz_file = f"{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}.npz"
+    npz_file = f"{collector}_period{period}_interval{interval}_start{start}_end{stop}_datalength{data_length}.npz"
     npz_filepath = f"{data_folder_name}/{npz_file}"
     with np.load(npz_filepath) as npz:
         data = npz[f'{dataset}_data']
@@ -30,11 +30,12 @@ def load_data(collector, period, interval, start, stop, data_length, dataset):
             testing_last_data_values = npz['testing_last_data_values']
 
     # Remove any nans
+    amount_of_data = len(labels)
     nan_idx = [idx[0] for idx in np.argwhere(np.isnan(data))]
     data = np.delete(data, nan_idx, axis=0)
     labels = np.delete(labels, nan_idx)
 
-    logger.INFO(f"Removed {len(nan_idx)} nan values of of {len(labels)} in total")
+    logger.INFO(f"Removed {len(nan_idx)} nan values of of {amount_of_data} in total")
 
     if dataset == 'testing':
         testing_tickers = np.delete(testing_tickers, nan_idx)
@@ -43,6 +44,9 @@ def load_data(collector, period, interval, start, stop, data_length, dataset):
         return data, labels, testing_tickers, testing_last_data_values
     else:
         return data, labels
+
+def load_quantile_data():
+
 
 def load_training_data(collector, period, interval, start, stop, data_length):
     return load_data(collector, period, interval, start, stop, data_length, "training")

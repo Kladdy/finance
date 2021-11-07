@@ -42,11 +42,11 @@ if conv_start:  # If convolutional layers at the start, we need to reshape the d
 testing_dataset = tf.data.Dataset.from_tensor_slices((testing_data, testing_labels))
 
 # Construct model file path
-model_filename = f"model_{run_name}_{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}.h5"
+model_filename = f"model_{run_name}_{collector}_period{period}_interval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}.h5"
 model_filepath = f"{model_folder_name}/{model_filename}"
 
 # Construct results file path
-results_filename = f"results_{run_name}_{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}"
+results_filename = f"results_{run_name}_{collector}_period{period}_interval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}"
 results_filepath = f"{results_folder_name}/{results_filename}"
 
 # Load the model
@@ -106,15 +106,24 @@ def get_percentage_quantile_sums(percentage):
     true_values_above_quantile = testing_labels[predictions_above_quantile[:, 0].astype(int)] # Extract what the true values will be
 
     # Return the sum of the predictions above the given quantile
-    return sum(true_values_above_quantile) 
+    return sum(true_values_above_quantile), sum(predictions_above_quantile)
+
+class Quantile:
+    def __init__(self, quantile, sum_true, sum_predicted):
+        self.quantile = quantile
+        self.sum_true = sum_true
+        self.sum_predicted = sum_predicted
 
 quantiles = [0.1, 0.2, 0.5, 0.8, 1.0, 1.5, 2.0]
-quantile_sums = []
+quantile_sums = np.array([], dtype=Quantile)
 for quantile in quantiles:
     try:
-        quantile_sums.append((quantile, get_percentage_quantile_sums(quantile)))
+        sum_true, sum_predicted = get_percentage_quantile_sums(quantile)
+        quantile_sums = np.append(quantile_sums, Quantile(quantile, sum_true, sum_predicted))
     except ValueError as e:
         logger.DEBUG(e)
+    except Exception as e:
+        logger.ERR(e)
 
 fig, axs = plt.subplots(1, 2, figsize=(10, 5))
 axs[0].plot(predictions, testing_labels, '.')
@@ -130,12 +139,10 @@ axs[1].plot(predicted_values, true_values, '.')
 axs[1].set_xlabel('predicted absolute value')
 axs[1].set_ylabel('true absolute value')
 
-fig.suptitle(f'Quantiles: {", ".join([f"({q[0]}: {q[1]:.3f})" for q in quantile_sums])}')
+# fig.suptitle(f'Quantiles: {", ".join([f"({q[0]}: {q[1]:.3f})" for q in quantile_sums])}')
 fig.tight_layout()
 
 fig.savefig(f'{results_filepath}.png')
 
-# print("testing labels: ", testing_labels)
-# print("predictions: ", predictions)
-# print("Difference: ", testing_labels - predictions)
-# print("Difference relative: ", np.divide((testing_labels - predictions), predictions))
+# Save quantile data
+np.savez(f'{results_filepath}.npz', quantile_sums=quantile_sums)
