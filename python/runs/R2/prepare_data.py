@@ -10,12 +10,12 @@ from math import floor
 
 # Parse arguments
 parser = argparse.ArgumentParser(description='Prepare data')
-parser.add_argument('collector', type=str, help='the collector, ie C1, C2...')
-parser.add_argument('period', type=str, help='the period, ie 1mo, 1y...')
-parser.add_argument('interval', type=str, help='the interval, ie 1m, 30m...')
-parser.add_argument('start', type=str, help='the start date, ie 2021.04.29...')
-parser.add_argument('stop', type=str, help='the stop date, ie 2021.05.28...')
-parser.add_argument('data_length', type=int, help='the amount of samples to have in the trace, ie 20')
+parser.add_argument('--collector', type=str, help='the collector, ie C1, C2...')
+parser.add_argument('--period', type=str, help='the period, ie 1mo, 1y...')
+parser.add_argument('--interval', type=str, help='the interval, ie 1m, 30m...')
+parser.add_argument('--start', type=str, help='the start date, ie 2021.04.29...')
+parser.add_argument('--stop', type=str, help='the stop date, ie 2021.05.28...')
+parser.add_argument('--data_length', type=int, help='the amount of samples to have in the trace, ie 20')
 
 args = parser.parse_args()
 collector = args.collector

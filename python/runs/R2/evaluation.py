@@ -11,13 +11,15 @@ import matplotlib.pyplot as plt
 
 # Parse arguments
 parser = argparse.ArgumentParser(description='Evaluate model')
-parser.add_argument('collector', type=str, help='the collector, ie C1, C2...')
-parser.add_argument('period', type=str, help='the period, ie 1mo, 1y...')
-parser.add_argument('interval', type=str, help='the interval, ie 1m, 30m...')
-parser.add_argument('start', type=str, help='the start date, ie 2021.04.29...')
-parser.add_argument('stop', type=str, help='the stop date, ie 2021.05.28...')
-parser.add_argument('data_length', type=int, help='the amount of samples to have in the trace, ie 20')
-parser.add_argument('batch_size', type=int, help='the batch size, ie 64')
+parser.add_argument('--collector', type=str, help='the collector, ie C1, C2...')
+parser.add_argument('--period', type=str, help='the period, ie 1mo, 1y...')
+parser.add_argument('--interval', type=str, help='the interval, ie 1m, 30m...')
+parser.add_argument('--start', type=str, help='the start date, ie 2021.04.29...')
+parser.add_argument('--stop', type=str, help='the stop date, ie 2021.05.28...')
+parser.add_argument('--data_length', type=int, help='the amount of samples to have in the trace, ie 20')
+parser.add_argument('--batch_size', type=int, help='the batch size, ie 64')
+parser.add_argument('--conv_start', dest='conv_start', action='store_true', help='whether or not the model starts with convolutional layers')
+parser.set_defaults(conv_start=False)
 
 args = parser.parse_args()
 collector = args.collector
@@ -27,6 +29,7 @@ start = args.start
 stop = args.stop
 data_length = args.data_length
 batch_size = args.batch_size
+conv_start = args.conv_start
 
 logger.INFO(f"Evaluating {run_name}...")
 
