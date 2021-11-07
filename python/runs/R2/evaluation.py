@@ -6,7 +6,8 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import load_model
 import argparse
-from constants import run_name, results_folder_name, model_folder_name
+from constants import run_name, results_folder_name
+from toolbox import get_model_filepath, get_results_filepath, Quantile
 import matplotlib.pyplot as plt
 
 # Parse arguments
@@ -17,8 +18,8 @@ parser.add_argument('--interval', type=str, help='the interval, ie 1m, 30m...')
 parser.add_argument('--start', type=str, help='the start date, ie 2021.04.29...')
 parser.add_argument('--stop', type=str, help='the stop date, ie 2021.05.28...')
 parser.add_argument('--data_length', type=int, help='the amount of samples to have in the trace, ie 20')
-parser.add_argument('--batch_size', type=int, help='the batch size, ie 64')
 parser.add_argument('--conv_start', dest='conv_start', action='store_true', help='whether or not the model starts with convolutional layers')
+parser.add_argument('--run_id', type=str, help='the id of the run')
 parser.set_defaults(conv_start=False)
 
 args = parser.parse_args()
@@ -28,10 +29,10 @@ interval = args.interval
 start = args.start
 stop = args.stop
 data_length = args.data_length
-batch_size = args.batch_size
 conv_start = args.conv_start
+run_id = args.run_id
 
-logger.INFO(f"Evaluating {run_name}...")
+logger.INFO(f"Evaluating {run_name} (id {run_id})...")
 
 mkdir(results_folder_name)
 
@@ -42,12 +43,10 @@ if conv_start:  # If convolutional layers at the start, we need to reshape the d
 testing_dataset = tf.data.Dataset.from_tensor_slices((testing_data, testing_labels))
 
 # Construct model file path
-model_filename = f"model_{run_name}_{collector}_period{period}_interval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}.h5"
-model_filepath = f"{model_folder_name}/{model_filename}"
+model_filepath = get_model_filepath(run_id)
 
 # Construct results file path
-results_filename = f"results_{run_name}_{collector}_period{period}_interval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}"
-results_filepath = f"{results_folder_name}/{results_filename}"
+results_filepath = get_results_filepath(run_id)
 
 # Load the model
 model = load_model(model_filepath)
@@ -106,13 +105,7 @@ def get_percentage_quantile_sums(percentage):
     true_values_above_quantile = testing_labels[predictions_above_quantile[:, 0].astype(int)] # Extract what the true values will be
 
     # Return the sum of the predictions above the given quantile
-    return sum(true_values_above_quantile), sum(predictions_above_quantile)
-
-class Quantile:
-    def __init__(self, quantile, sum_true, sum_predicted):
-        self.quantile = quantile
-        self.sum_true = sum_true
-        self.sum_predicted = sum_predicted
+    return sum(true_values_above_quantile), sum(predictions_above_quantile[:, 1])
 
 quantiles = [0.1, 0.2, 0.5, 0.8, 1.0, 1.5, 2.0]
 quantile_sums = np.array([], dtype=Quantile)

@@ -4,9 +4,15 @@ import os
 import log
 import pandas as pd
 import numpy as np
-from constants import data_folder_name
+from constants import data_folder_name, model_folder_name, results_folder_name
 
 logger = log.Log("DEBUG")
+
+class Quantile:
+    def __init__(self, quantile, sum_true, sum_predicted):
+        self.quantile = quantile
+        self.sum_true = sum_true
+        self.sum_predicted = sum_predicted
 
 def mkdir(folder_name):
     """Makes sure a folder exists, otherwise creates it"""
@@ -14,6 +20,17 @@ def mkdir(folder_name):
     if not os.path.exists(folder_name):
         logger.INFO(f"Folder did not exist, creating {folder_name}...")
         os.makedirs(folder_name)
+
+def get_model_filepath(run_id):
+    model_filename = f"model_{run_id}.h5"
+    model_filepath = f"{model_folder_name}/{model_filename}"
+    return model_filepath
+
+def get_results_filepath(run_id):
+    results_filename = f"results_{run_id}"
+    results_filepath = f"{results_folder_name}/{results_filename}"
+    return results_filepath
+    
 
 def load_data(collector, period, interval, start, stop, data_length, dataset):
     assert dataset in ["training", "validation", "testing"]
@@ -45,8 +62,14 @@ def load_data(collector, period, interval, start, stop, data_length, dataset):
     else:
         return data, labels
 
-def load_quantile_data():
+def load_quantile_data(run_id):
+    npz_filepath = f'{get_results_filepath(run_id)}.npz'
 
+    with np.load(npz_filepath, allow_pickle=True) as npz:
+        quantile_sums = npz['quantile_sums']
+
+    return quantile_sums
+        
 
 def load_training_data(collector, period, interval, start, stop, data_length):
     return load_data(collector, period, interval, start, stop, data_length, "training")

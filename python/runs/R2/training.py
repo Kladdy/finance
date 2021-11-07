@@ -3,7 +3,7 @@ import sys
 from tensorflow import python
 from tensorflow.python.keras import activations, callbacks
 from tensorflow.python.ops.gen_batch_ops import batch
-from toolbox import logger, load_training_data, load_validation_data, mkdir
+from toolbox import logger, load_training_data, load_validation_data, mkdir, get_model_filepath, load_quantile_data, get_results_filepath, Quantile
 import wandb
 from wandb.keras import WandbCallback
 import numpy as np
@@ -11,6 +11,7 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint
 import argparse
 from constants import run_name, model_folder_name
+from PIL import Image
 
 # Parse arguments
 parser = argparse.ArgumentParser(description='Run training')
@@ -43,9 +44,7 @@ mkdir(model_folder_name)
 
 # Define constants
 learning_rate=0.000001
-epochs = 2
-model_filename = f"model_{run_name}_{collector}_period{period}_interval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}.h5"
-model_filepath = f"{model_folder_name}/{model_filename}"
+epochs = 1
 
 # Load training and validation data and convert to dataset tensors
 training_data, training_labels = load_training_data(collector, period, interval, start, stop, data_length)
@@ -67,7 +66,7 @@ training_dataset = training_dataset.shuffle(100).batch(batch_size)
 validation_dataset = validation_dataset.batch(batch_size)
 
 # Initialize wandb
-wandb.init(project="finance", entity="sigfid")
+run = wandb.init(project="finance", entity="sigfid", group=run_name)
 wandb.config = {
   learning_rate: learning_rate,
   epochs: epochs,
@@ -77,10 +76,15 @@ wandb.config = {
   start: start,
   stop: stop,
   data_length: data_length,
-  batch_size: batch_size
-
+  batch_size: batch_size,
+  conv_start: conv_start
 }
 
+# Get the run id
+run_id = wandb.run.name
+
+# File paths
+model_filepath = get_model_filepath(run_id)
 
 # Create model
 model = tf.keras.Sequential()
@@ -112,4 +116,21 @@ model.fit(x=training_dataset, validation_data=validation_dataset,
             callbacks=callback_list, epochs=epochs)
 
 # Evaluate the model
-os.system(f"python evaluation.py {arg_string}")
+os.system(f"python evaluation.py --collector={collector} --period={period} --interval={interval} --start={start} --stop={stop} --data_length={data_length}{' --conv_start' if conv_start else ''} --run_id={run_id}")
+
+try:
+  # Get quantile data from evaluator and send to wandb
+  quantile_sums = load_quantile_data(run_id)
+  quantile_dictionary_true = {f"q_{quantile.quantile}_true": quantile.sum_true for quantile in quantile_sums}
+  quantile_dictionary_pred = {f"q_{quantile.quantile}_pred": quantile.sum_predicted for quantile in quantile_sums}
+  wandb.log(quantile_dictionary_true)
+  wandb.log(quantile_dictionary_pred)
+
+  # Get evaluation plot and upload to wandb
+  results_filepath = get_results_filepath(run_id)
+  run_results_image = Image.open(f"{results_filepath}.png")
+  wandb.log({"run_results_image": [wandb.Image(run_results_image, caption=f"results for {run_id}")]})
+except Exception as e:
+  logger.ERR(e)
+
+run.finish()
