@@ -37,7 +37,8 @@ mkdir(results_folder_name)
 
 # Load testing data and convert to dataset tensor
 testing_data, testing_labels, testing_tickers, testing_last_data_values = load_testing_data(collector, period, interval, start, stop, data_length)
-# testing_data = np.expand_dims(testing_data, 2) if Conv1d
+if conv_start:  # If convolutional layers at the start, we need to reshape the data
+  testing_data = np.expand_dims(testing_data, 2)
 testing_dataset = tf.data.Dataset.from_tensor_slices((testing_data, testing_labels))
 
 # Construct model file path

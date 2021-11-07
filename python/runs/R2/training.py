@@ -1,4 +1,5 @@
 import os
+import sys
 from tensorflow import python
 from tensorflow.python.keras import activations, callbacks
 from tensorflow.python.ops.gen_batch_ops import batch
@@ -33,6 +34,9 @@ data_length = args.data_length
 batch_size = args.batch_size
 conv_start = args.conv_start
 
+# Get argument string (for calling the evaluator)
+arg_string = ' '.join(sys.argv[1:])
+
 logger.INFO(f"Training {run_name}...")
 
 mkdir(model_folder_name)
@@ -47,9 +51,13 @@ model_filepath = f"{model_folder_name}/{model_filename}"
 training_data, training_labels = load_training_data(collector, period, interval, start, stop, data_length)
 validation_data, validation_labels = load_validation_data(collector, period, interval, start, stop, data_length)
 
-# Expand dims (if Conv1D)
-# training_data = np.expand_dims(training_data, 2)
-# validation_data = np.expand_dims(validation_data, 2)
+# If convolutional layers at the start, we need to reshape the data and input shape
+if conv_start:
+  input_shape = (data_length, 1)
+  training_data = np.expand_dims(training_data, 2)
+  validation_data = np.expand_dims(validation_data, 2)
+else:
+  input_shape = (data_length, )
 
 training_dataset = tf.data.Dataset.from_tensor_slices((training_data, training_labels))
 validation_dataset = tf.data.Dataset.from_tensor_slices((validation_data, validation_labels))
@@ -77,12 +85,12 @@ wandb.config = {
 # Create model
 model = tf.keras.Sequential()
 
-# model.add(tf.keras.layers.Conv1D(128, 3, padding='same', input_shape=(data_length, 1)))
+# model.add(tf.keras.layers.Conv1D(128, 3, padding='same', input_shape=input_shape))
 # model.add(tf.keras.layers.Conv1D(128, 3, padding='same'))
 # model.add(tf.keras.layers.Conv1D(128, 3, padding='same'))
 # model.add(tf.keras.layers.Conv1D(128, 3, padding='same'))
 # model.add(tf.keras.layers.Flatten())
-model.add(tf.keras.layers.Flatten(input_shape=(data_length,)))
+model.add(tf.keras.layers.Flatten(input_shape=input_shape))
 model.add(tf.keras.layers.Dense(128, activation='relu'))
 model.add(tf.keras.layers.Dense(128, activation='relu'))
 model.add(tf.keras.layers.Dense(128, activation='relu'))
@@ -104,4 +112,4 @@ model.fit(x=training_dataset, validation_data=validation_dataset,
             callbacks=callback_list, epochs=epochs)
 
 # Evaluate the model
-os.system(f"python evaluation.py {collector} {period} {interval} {start} {stop} {data_length} {batch_size}")
+os.system(f"python evaluation.py {arg_string}")
