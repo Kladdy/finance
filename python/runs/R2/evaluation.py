@@ -1,4 +1,6 @@
+import enum
 from numpy.core.fromnumeric import size
+from tensorflow.python.keras.backend import dtype
 from toolbox import logger, load_testing_data, mkdir
 import numpy as np
 import tensorflow as tf
@@ -40,7 +42,7 @@ model_filename = f"model_{run_name}_{collector}_period{period}_inteval{interval}
 model_filepath = f"{model_folder_name}/{model_filename}"
 
 # Construct results file path
-results_filename = f"results_{run_name}_{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}.png"
+results_filename = f"results_{run_name}_{collector}_period{period}_inteval{interval}_start{start}_end{stop}_datalength{data_length}_batchsize{batch_size}"
 results_filepath = f"{results_folder_name}/{results_filename}"
 
 # Load the model
@@ -55,9 +57,9 @@ N = len(testing_labels)
 predicted_values = np.zeros(N)
 true_values = np.zeros(N)
 
-# List for profit/loss if sample_prediction > 0
-cost = []
-profit_loss = []
+cost_absolute = np.zeros(N)
+true_profit_loss_absolute = np.zeros(N)
+true_margin_relative = np.zeros(N)
 
 for i in range(N):
     sample_data = testing_data[i, :]
@@ -79,9 +81,36 @@ for i in range(N):
     predicted_values[i] = sample_predicted_absolute
     true_values[i] = sample_true_absolute
 
-    if sample_prediction > 0.001:
-        cost.append(sample_last_data_value)
-        profit_loss.append(sample_true_absolute - sample_last_data_value)
+    cost_absolute[i] = sample_last_data_value
+    true_profit_loss_absolute[i] = sample_true_absolute - sample_last_data_value
+    true_margin_relative[i] = (sample_true_absolute - sample_last_data_value) / sample_last_data_value
+
+
+# Get the percentage quantiles for predictions, and sum them up
+def get_percentage_quantile_sums(percentage):
+    idx_that_predicts_profit = predictions > 0
+    amount_that_predicts_profit = sum(idx_that_predicts_profit)
+
+    idx_and_predictions = np.array([np.array([idx, prediction]) for idx, prediction in enumerate(predictions)])
+    sorted_idx_and_predictions = idx_and_predictions[idx_and_predictions[:, 1].argsort()] # sort by predictions, keeping index beside it
+    idx_for_predictions_above_quantile = -round(percentage * amount_that_predicts_profit)
+
+    if (idx_for_predictions_above_quantile < -N):
+        raise ValueError(f"get_percentage_quantile_sums({percentage}): Index ({-idx_for_predictions_above_quantile}) exceeds the bound ({-N})")
+
+    predictions_above_quantile = sorted_idx_and_predictions[(idx_for_predictions_above_quantile):, :]
+    true_values_above_quantile = testing_labels[predictions_above_quantile[:, 0].astype(int)] # Extract what the true values will be
+
+    # Return the sum of the predictions above the given quantile
+    return sum(true_values_above_quantile) 
+
+quantiles = [0.1, 0.2, 0.5, 0.8, 1.0, 1.5, 2.0]
+quantile_sums = []
+for quantile in quantiles:
+    try:
+        quantile_sums.append((quantile, get_percentage_quantile_sums(quantile)))
+    except ValueError as e:
+        logger.DEBUG(e)
 
 fig, axs = plt.subplots(1, 2, figsize=(10, 5))
 axs[0].plot(predictions, testing_labels, '.')
@@ -95,12 +124,12 @@ axs[0].legend([None, poly1d_fn])
 
 axs[1].plot(predicted_values, true_values, '.')
 axs[1].set_xlabel('predicted absolute value')
-axs[1].set_xlabel('true absolute value')
+axs[1].set_ylabel('true absolute value')
 
-fig.suptitle(f'Profit/loss: {sum(profit_loss)} at a cost of {sum(cost)}')
-#print(profit_loss)
+fig.suptitle(f'Quantiles: {", ".join([f"({q[0]}: {q[1]:.3f})" for q in quantile_sums])}')
+fig.tight_layout()
 
-fig.savefig(results_filepath)
+fig.savefig(f'{results_filepath}.png')
 
 # print("testing labels: ", testing_labels)
 # print("predictions: ", predictions)
