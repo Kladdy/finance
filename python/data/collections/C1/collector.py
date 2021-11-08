@@ -7,12 +7,12 @@ import csv
 # Constants
 collector_name = "C1"
 saved_data_dir = "saved_data"
-period = "1mo"
-interval = "90m"
+period = "1y"
+interval = "1d"
 
 # Make sure saved_data folder exists
 
-mkdir("saved_data")
+mkdir(saved_data_dir)
 
 ticker_symbol_list = []
 
