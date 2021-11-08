@@ -20,9 +20,12 @@ parameters:
   optimizer:
     distribution: categorical
     values: ["adam", "sgd"]
+  loss_function:
+    distribution: categorical
+    values: ["mean_absolute_error", "mean_squared_error", "mean_absolute_percentage_error", "mean_squared_logarithmic_error", "cosine_similarity", "huber", "log_cosh"]
   activation_function:
     distribution: categorical
-    values: ["relu", "sigmoid", "softmax", "softplus", "osftsign", "tanh", "selu", "elu", "exponential"]
+    values: ["relu", "sigmoid", "softmax", "softplus", "softsign", "tanh", "selu", "elu", "exponential"]
 
 
 argments to add:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

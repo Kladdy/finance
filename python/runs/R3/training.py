@@ -25,6 +25,9 @@ parser.add_argument('--data_length', type=int, help='the amount of samples to ha
 parser.add_argument('--batch_size', type=int, help='the batch size, ie 64')
 parser.add_argument('--learning_rate', type=float, help='the learning rate, ie 0.000001')
 parser.add_argument('--epochs', type=int, help='the amount of epochs, ie 50')
+parser.add_argument('--optimizer', type=str, help='the optimizer, ie adam')
+parser.add_argument('--activation_function', type=str, help='the activation function, ie relu')
+parser.add_argument('--loss_function', type=str, help='the loss function, ie mae')
 parser.add_argument('--conv_start', dest='conv_start', action='store_true', help='whether or not the model starts with convolutional layers')
 parser.set_defaults(conv_start=False)
 
@@ -38,6 +41,9 @@ data_length = args.data_length
 batch_size = args.batch_size
 learning_rate = args.learning_rate
 epochs = args.epochs
+optimizer = args.optimizer
+activation_function = args.activation_function
+loss_function = args.loss_function
 conv_start = args.conv_start
 
 # Get argument string (for calling the evaluator)
@@ -86,6 +92,57 @@ run_id = wandb.run.name
 # File paths
 model_filepath = get_model_filepath(run_id)
 
+# Create the optimizer
+if optimizer == "adam":
+  optimizer = tf.keras.optimizers.Adam(learning_rate)
+elif optimizer == "sgd":
+  optimizer =tf.keras.optimizers.SGD(learning_rate)
+else:
+  logger.ERR(f"Optimizer {optimizer} not supported")
+  raise ValueError(f"Optimizer {optimizer} not supported")
+
+# Create the loss function
+if loss_function == "mean_absolute_error":
+  loss = tf.keras.losses.MeanAbsoluteError()
+elif loss_function == "mean_squared_error":
+  loss = tf.keras.losses.MeanSquaredError()
+elif loss_function == "mean_absolute_percentage_error":
+  loss = tf.keras.losses.MeanAbsolutePercentageError()
+elif loss_function == "mean_squared_logarithmic_error":
+  loss = tf.keras.losses.MeanSquaredLogarithmicError()
+elif loss_function == "cosine_similarity":
+  loss = tf.keras.losses.CosineSimilarity()
+elif loss_function == "huber":
+  loss = tf.keras.losses.Huber()
+elif loss_function == "log_cosh":
+  loss = tf.keras.losses.LogCosh()
+else:
+  logger.ERR(f"Loss function {loss_function} not supported")
+  raise ValueError(f"Loss function {loss_function} not supported")
+
+# Create the activation function
+if activation_function == "relu":
+  activation = activations.relu
+elif activation_function == "sigmoid":
+  activation = activations.sigmoid
+elif activation_function == "softmax":
+  activation = activations.softmax
+elif activation_function == "softplus":
+  activation = activations.softplus
+elif activation_function == "softsign":
+  activation = activations.softsign
+elif activation_function == "tanh":
+  activation = activations.tanh
+elif activation_function == "selu":
+  activation = activations.selu
+elif activation_function == "elu":
+  activation = activations.elu
+elif activation_function == "exponential":
+  activation = activations.exponential
+else:
+  logger.ERR(f"Activation function {loss_function} not supported")
+  raise ValueError(f"Activation function {loss_function} not supported")
+
 # ---------------------------
 # Create model
 model = tf.keras.Sequential()
@@ -98,8 +155,8 @@ model.add(tf.keras.layers.Dense(128, activation='relu'))
 model.add(tf.keras.layers.Dense(10, activation='relu'))
 model.add(tf.keras.layers.Dense(1))
 
-model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate),
-              loss=tf.keras.losses.MeanAbsoluteError())
+model.compile(optimizer=optimizer,
+              loss=loss)
 # ---------------------------
 
 # Save model as image
