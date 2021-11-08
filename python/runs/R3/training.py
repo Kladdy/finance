@@ -11,7 +11,7 @@ import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 from tensorflow.keras.utils import plot_model
 import argparse
-from constants import run_name, model_folder_name
+from constants import run_name, model_folder_name, wandb_dir
 from PIL import Image
 
 # Parse arguments
@@ -107,7 +107,7 @@ training_dataset = training_dataset.shuffle(100).batch(batch_size)
 validation_dataset = validation_dataset.batch(batch_size)
 
 # Initialize wandb
-run = wandb.init(project="finance", entity="sigfid", group=run_name, config=args)
+run = wandb.init(project="finance", entity="sigfid", group=run_name, config=args, dir=wandb_dir)
 
 # Get the run id
 run_id = wandb.run.name

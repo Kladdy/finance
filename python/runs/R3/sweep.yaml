@@ -1,9 +1,19 @@
 program: training.py 
+# command:
+#   - /Users/sigge/miniforge3/envs/tf-finance/bin/python # ${env}
+#   - "" # ${interpreter} I put the interpreter in the command above
+#   - ${program} # ${program}
+#   - --conv_start --collector=C1 --period=1y --interval=1d --start=2020.11.05 --stop=2021.11.05 # Dataset arguments
+#   - ${args} # ${args}
 command:
-  - /Users/sigge/miniforge3/envs/tf-finance/bin # ${env}
-  - ${interpreter} # ${interpreter}
-  - ${program} # ${program}
-  - "--conv_start --collector=C1 --period=1y --interval=1d --start=2020.11.05 --stop=2021.11.05" # Dataset arguments
+  - /Users/sigge/miniforge3/envs/tf-finance/bin/python 
+  - training.py 
+  - --conv_start
+  - --collector=C1 
+  - --period=1y 
+  - --interval=1d 
+  - --start=2020.11.05 
+  - --stop=2021.11.05 
   - ${args} # ${args}
 method: bayes
 metric:

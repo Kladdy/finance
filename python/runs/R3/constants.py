@@ -5,6 +5,7 @@ collector_folder_path = "../../data/collections"
 data_folder_name = "saved_data"
 model_folder_name = "saved_models"
 results_folder_name = "results"
+wandb_dir = f"/Users/sigge/Programmering/python/finance/python/runs/{run_name}"
 
 # Training/validation/testing split
 training_split = 0.75
