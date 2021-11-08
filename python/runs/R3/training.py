@@ -28,6 +28,10 @@ parser.add_argument('--epochs', type=int, help='the amount of epochs, ie 50')
 parser.add_argument('--optimizer', type=str, help='the optimizer, ie adam')
 parser.add_argument('--activation_function', type=str, help='the activation function, ie relu')
 parser.add_argument('--loss_function', type=str, help='the loss function, ie mae')
+parser.add_argument('--conv_layers', type=int, help='the amount of conv layers')
+parser.add_argument('--conv_filters', type=int, help='the amonunt of conv filters per layer')
+parser.add_argument('--conv_kernel_size', type=int, help='the conv kernel size')
+parser.add_argument('--conv_padding', type=str, help='the conv padding, ie same')
 parser.add_argument('--conv_start', dest='conv_start', action='store_true', help='whether or not the model starts with convolutional layers')
 parser.set_defaults(conv_start=False)
 
@@ -44,10 +48,14 @@ epochs = args.epochs
 optimizer = args.optimizer
 activation_function = args.activation_function
 loss_function = args.loss_function
+conv_layers = args.conv_layers
+conv_filters = args.conv_filters
+conv_kernel_size = args.conv_kernel_size
+conv_padding = args.conv_padding
 conv_start = args.conv_start
 
-# Get argument string (for calling the evaluator)
-arg_string = ' '.join(sys.argv[1:])
+# Make sure that the kernel size is smaller or equal to the data length
+assert conv_kernel_size <= data_length
 
 logger.INFO(f"Training {run_name}...")
 
@@ -144,19 +152,29 @@ else:
   raise ValueError(f"Activation function {loss_function} not supported")
 
 # ---------------------------
-# Create model
+#        Create model
+# ---------------------------
 model = tf.keras.Sequential()
 
-model.add(tf.keras.layers.Conv1D(16, 3, padding='same', input_shape=input_shape))
-model.add(tf.keras.layers.Conv1D(16, 3, padding='same'))
+# Add first conv layer
+model.add(tf.keras.layers.Conv1D(conv_filters, conv_kernel_size, padding=conv_padding, activation=activation, input_shape=input_shape))
+
+# Add the rest
+for _ in range(conv_layers - 1):
+  model.add(tf.keras.layers.Conv1D(conv_filters, conv_kernel_size, padding=conv_padding, activation=activation))
+
 model.add(tf.keras.layers.Flatten())
-# model.add(tf.keras.layers.Flatten(input_shape=input_shape))
-model.add(tf.keras.layers.Dense(128, activation='relu'))
-model.add(tf.keras.layers.Dense(10, activation='relu'))
+
+  # If not using conv layers, flatten like this (first layer, is it really needed?)
+  # model.add(tf.keras.layers.Flatten(input_shape=input_shape))
+
+model.add(tf.keras.layers.Dense(128, activation=activation))
+model.add(tf.keras.layers.Dense(10, activation=activation))
+
+# Output layer
 model.add(tf.keras.layers.Dense(1))
 
-model.compile(optimizer=optimizer,
-              loss=loss)
+model.compile(optimizer=optimizer, loss=loss)
 # ---------------------------
 
 # Save model as image

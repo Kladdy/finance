@@ -1,4 +1,10 @@
-program: training.py --conv_start --collector=C1 --period=1y --interval=1d --start=2020.11.05 --stop=2021.11.05
+program: training.py 
+command:
+  - /Users/sigge/miniforge3/envs/tf-finance/bin/python
+  - ${interpreter}
+  - ${program}
+  - "--conv_start --collector=C1 --period=1y --interval=1d --start=2020.11.05 --stop=2021.11.05"
+  - ${args}
 method: bayes
 metric:
   name: val_loss
@@ -13,10 +19,15 @@ parameters:
   batch_size:
     distribution: categorical
     values: [1, 2, 4, 8, 16, 32, 64, 128, 256]
+  # Set the data length to be constant because otherwise for conv_kernel_size, we will have no
+  # idea of what the maximum value should be
+  # data_length:
+  #   distribution: int_uniform
+  #   min: 2
+  #   max: 60
   data_length:
-    distribution: int_uniform
-    min: 2
-    max: 60
+    distribution: constant
+    value: 7
   optimizer:
     distribution: categorical
     values: ["adam", "sgd"]
@@ -26,8 +37,26 @@ parameters:
   activation_function:
     distribution: categorical
     values: ["relu", "sigmoid", "softmax", "softplus", "softsign", "tanh", "selu", "elu", "exponential"]
+  conv_layers:
+    distribution: int_uniform
+    min: 1
+    max: 10
+  conv_filters:
+    distribution: int_uniform
+    min: 1
+    max: 100
+  # Make sure to change data_length when changing the max value of conv_kernel_size
+  conv_kernel_size:
+    distribution: int_uniform
+    min: 1
+    max: 7
+  conv_padding:
+    distribution: constant
+    value: "same"
+
 
 
 argments to add:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-optimizer
-activation_function
+conv_layers
+conv_filters
+conv_kernel_size
