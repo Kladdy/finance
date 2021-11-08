@@ -1,4 +1,6 @@
 program: training.py 
+project: finance
+entity: sigfid
 # command:
 #   - /Users/sigge/miniforge3/envs/tf-finance/bin/python # ${env}
 #   - "" # ${interpreter} I put the interpreter in the command above
@@ -41,9 +43,14 @@ parameters:
   optimizer:
     distribution: categorical
     values: ["adam", "sgd"]
+  # Use a set value for the loss function, as minimizing the val_loss betweend different 
+  # loss functions is pointless
   loss_function:
-    distribution: categorical
-    values: ["mean_absolute_error", "mean_squared_error", "mean_absolute_percentage_error", "mean_squared_logarithmic_error", "cosine_similarity", "huber", "log_cosh"]
+    distribution: constant
+    value: "mean_absolute_error"
+  # loss_function:
+  #   distribution: categorical
+  #   values: ["mean_absolute_error", "mean_squared_error", "mean_absolute_percentage_error", "mean_squared_logarithmic_error", "cosine_similarity", "huber", "log_cosh"]
   activation_function:
     distribution: categorical
     values: ["relu", "sigmoid", "softmax", "softplus", "softsign", "tanh", "selu", "elu", "exponential"]
