@@ -104,8 +104,13 @@ def get_percentage_quantile_sums(percentage):
     predictions_above_quantile = sorted_idx_and_predictions[(idx_for_predictions_above_quantile):, :]
     true_values_above_quantile = testing_labels[predictions_above_quantile[:, 0].astype(int)] # Extract what the true values will be
 
+    amount_above_quantile = len(true_values_above_quantile)
+
+    predictions_above_quantile_per_ticker = sum(predictions_above_quantile[:, 1]) / amount_above_quantile
+    true_values_above_quantile_per_ticker = sum(true_values_above_quantile) / amount_above_quantile
+
     # Return the sum of the predictions above the given quantile
-    return sum(true_values_above_quantile), sum(predictions_above_quantile[:, 1])
+    return true_values_above_quantile_per_ticker, predictions_above_quantile_per_ticker
 
 quantiles = [0.1, 0.2, 0.5, 0.8, 1.0, 1.5, 2.0]
 quantile_sums = np.array([], dtype=Quantile)
@@ -134,8 +139,12 @@ axs[1].set_ylabel('true absolute value')
 
 # fig.suptitle(f'Quantiles: {", ".join([f"({q[0]}: {q[1]:.3f})" for q in quantile_sums])}')
 fig.tight_layout()
-
 fig.savefig(f'{results_filepath}.png')
 
+# Calculate the covariance
+cov = np.cov(predictions, testing_labels)
+cov_off_diagonal = cov[0,1]
+
 # Save quantile data
-np.savez(f'{results_filepath}.npz', quantile_sums=quantile_sums)
+np.savez(f'{results_filepath}.npz', quantile_sums=quantile_sums,
+            linear_coef=coef, cov_off_diagonal=cov_off_diagonal)

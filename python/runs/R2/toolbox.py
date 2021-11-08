@@ -62,13 +62,15 @@ def load_data(collector, period, interval, start, stop, data_length, dataset):
     else:
         return data, labels
 
-def load_quantile_data(run_id):
+def load_evaluation_data(run_id):
     npz_filepath = f'{get_results_filepath(run_id)}.npz'
 
     with np.load(npz_filepath, allow_pickle=True) as npz:
         quantile_sums = npz['quantile_sums']
+        linear_coef = npz['linear_coef']
+        cov_off_diagonal = npz['cov_off_diagonal']
 
-    return quantile_sums
+    return quantile_sums, linear_coef, cov_off_diagonal
         
 
 def load_training_data(collector, period, interval, start, stop, data_length):

@@ -3,7 +3,7 @@ import sys
 from tensorflow import python
 from tensorflow.python.keras import activations, callbacks
 from tensorflow.python.ops.gen_batch_ops import batch
-from toolbox import logger, load_training_data, load_validation_data, mkdir, get_model_filepath, load_quantile_data, get_results_filepath, Quantile
+from toolbox import logger, load_training_data, load_validation_data, mkdir, get_model_filepath, load_evaluation_data, get_results_filepath, Quantile
 import wandb
 from wandb.keras import WandbCallback
 import numpy as np
@@ -119,12 +119,17 @@ model.fit(x=training_dataset, validation_data=validation_dataset,
 os.system(f"python evaluation.py --collector={collector} --period={period} --interval={interval} --start={start} --stop={stop} --data_length={data_length}{' --conv_start' if conv_start else ''} --run_id={run_id}")
 
 try:
-  # Get quantile data from evaluator and send to wandb
-  quantile_sums = load_quantile_data(run_id)
+  # Get evaluator from evaluator and send to wandb
+  quantile_sums, linear_coef, cov_off_diagonal = load_evaluation_data(run_id)
   quantile_dictionary_true = {f"q_{quantile.quantile}_true": quantile.sum_true for quantile in quantile_sums}
   quantile_dictionary_pred = {f"q_{quantile.quantile}_pred": quantile.sum_predicted for quantile in quantile_sums}
   wandb.log(quantile_dictionary_true)
   wandb.log(quantile_dictionary_pred)
+  wandb.log({
+    'linear_k': linear_coef[0],
+    'linear_m': linear_coef[1],
+    'cov_off_diagonal': cov_off_diagonal
+  })
 
   # Get evaluation plot and upload to wandb
   results_filepath = get_results_filepath(run_id)
