@@ -9,6 +9,7 @@ from wandb.keras import WandbCallback
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
+from tensorflow.keras.utils import plot_model
 import argparse
 from constants import run_name, model_folder_name
 from PIL import Image
@@ -78,19 +79,6 @@ validation_dataset = validation_dataset.batch(batch_size)
 
 # Initialize wandb
 run = wandb.init(project="finance", entity="sigfid", group=run_name, config=args)
-# wandb.config = {
-#   learning_rate: learning_rate,
-#   epochs: epochs,
-#   collector: collector,
-#   period: period,
-#   interval: interval,
-#   start: start,
-#   stop: stop,
-#   data_length: data_length,
-#   batch_size: batch_size,
-#   conv_start: conv_start
-# }
-
 
 # Get the run id
 run_id = wandb.run.name
@@ -98,24 +86,24 @@ run_id = wandb.run.name
 # File paths
 model_filepath = get_model_filepath(run_id)
 
+# ---------------------------
 # Create model
 model = tf.keras.Sequential()
 
-# model.add(tf.keras.layers.Conv1D(128, 3, padding='same', input_shape=input_shape))
-# model.add(tf.keras.layers.Conv1D(128, 3, padding='same'))
-# model.add(tf.keras.layers.Conv1D(128, 3, padding='same'))
-# model.add(tf.keras.layers.Conv1D(128, 3, padding='same'))
-# model.add(tf.keras.layers.Flatten())
-model.add(tf.keras.layers.Flatten(input_shape=input_shape))
-model.add(tf.keras.layers.Dense(128, activation='relu'))
-model.add(tf.keras.layers.Dense(128, activation='relu'))
-model.add(tf.keras.layers.Dense(128, activation='relu'))
+model.add(tf.keras.layers.Conv1D(16, 3, padding='same', input_shape=input_shape))
+model.add(tf.keras.layers.Conv1D(16, 3, padding='same'))
+model.add(tf.keras.layers.Flatten())
+# model.add(tf.keras.layers.Flatten(input_shape=input_shape))
 model.add(tf.keras.layers.Dense(128, activation='relu'))
 model.add(tf.keras.layers.Dense(10, activation='relu'))
 model.add(tf.keras.layers.Dense(1))
 
 model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate),
               loss=tf.keras.losses.MeanAbsoluteError())
+# ---------------------------
+
+# Save model as image
+plot_model(model, to_file=f'{model_filepath}.png', show_shapes=True)
 
 # Callbacks
 es = EarlyStopping(monitor="val_loss", patience=es_patience, min_delta=es_min_delta, verbose=1),

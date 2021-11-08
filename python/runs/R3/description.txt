@@ -7,7 +7,7 @@ About
 Example
     python prepare_data.py --collector=C1 --period=1y --interval=1d --start=2020.11.05 --stop=2021.11.05 --data_length=7
     python training.py --collector=C1 --period=1y --interval=1d --start=2020.11.05 --stop=2021.11.05 --data_length=7 --batch_size=16 --learning_rate=0.000001 --epochs=50
-    python evaluation.py --collector=C1 --period=1y --interval=1d --start=2020.11.05 --stop=2021.11.05 --data_length=7 --batch_size=16 --learning_rate=0.000001 --epochs=50
+    python evaluation.py --collector=C1 --period=1y --interval=1d --start=2020.11.05 --stop=2021.11.05 --data_length=7 --run_id=wild-aardvark-32
 
     Add --conv_start to training or evaluation if model starts with convolutional layers
     
