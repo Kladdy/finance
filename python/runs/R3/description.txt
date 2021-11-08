@@ -1,0 +1,12 @@
+About
+    Same as R2, but just a refresh to test new kind of data 
+    This run uses the relative change in the stock value as a value to be predicted. 
+    This makes it so that companies with large absolute values of the stock price are not
+    significantly different from the smaller companies. 
+
+Example
+    python prepare_data.py --collector=C1 --period=1mo --interval=90m --start=2021.09.27 --stop=2021.10.27 --data_length=10
+    python training.py --collector=C1 --period=1mo --interval=90m --start=2021.09.27 --stop=2021.10.27 --data_length=10 --batch_size=16 
+    python evaluation.py --collector=C1 --period=1mo --interval=90m --start=2021.09.27 --stop=2021.10.27 --data_length=10 --batch_size=16 
+
+    Add --conv_start to training or evaluation if model starts with convolutional layers
