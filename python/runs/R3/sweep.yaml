@@ -1,6 +1,6 @@
 program: training.py 
 command:
-  - /Users/sigge/miniforge3/envs/tf-finance/bin/python
+  - /Users/sigge/miniforge3/envs/tf-finance/bin
   - ${interpreter}
   - ${program}
   - "--conv_start --collector=C1 --period=1y --interval=1d --start=2020.11.05 --stop=2021.11.05"
