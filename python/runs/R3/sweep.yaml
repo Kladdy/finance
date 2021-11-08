@@ -53,10 +53,13 @@ parameters:
   conv_padding:
     distribution: constant
     value: "same"
-
-
-
-argments to add:!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-conv_layers
-conv_filters
-conv_kernel_size
+  dense_halve_each_time:
+    distribution: categorical
+    values: ["True", "False"]
+  dense_layers:
+    distribution: int_uniform
+    min: 0
+    max: 10
+  dense_layer_nodes:
+    distribution: categorical
+    values: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]

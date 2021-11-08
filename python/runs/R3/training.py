@@ -32,6 +32,9 @@ parser.add_argument('--conv_layers', type=int, help='the amount of conv layers')
 parser.add_argument('--conv_filters', type=int, help='the amonunt of conv filters per layer')
 parser.add_argument('--conv_kernel_size', type=int, help='the conv kernel size')
 parser.add_argument('--conv_padding', type=str, help='the conv padding, ie same')
+parser.add_argument('--dense_halve_each_time', type=str, help='whether or not to halve the dense layer node count each layer')
+parser.add_argument('--dense_layers', type=int, help='the amount of dense layers, excluding the final layer')
+parser.add_argument('--dense_layer_nodes', type=int, help='the amount of dense layer nodes on the first dense layer')
 parser.add_argument('--conv_start', dest='conv_start', action='store_true', help='whether or not the model starts with convolutional layers')
 parser.set_defaults(conv_start=False)
 
@@ -52,10 +55,22 @@ conv_layers = args.conv_layers
 conv_filters = args.conv_filters
 conv_kernel_size = args.conv_kernel_size
 conv_padding = args.conv_padding
+dense_halve_each_time = True if args.dense_halve_each_time == "True" else False
+dense_layers = args.dense_layers
+dense_layer_nodes = args.dense_layer_nodes
 conv_start = args.conv_start
+
 
 # Make sure that the kernel size is smaller or equal to the data length
 assert conv_kernel_size <= data_length
+
+# Construct the dense layer node counts
+if dense_halve_each_time: 
+  node_counts = [int(dense_layer_nodes / 2**i) for i in range(dense_layers) if (dense_layer_nodes / 2**i >= 1)]
+  dense_layers = len(node_counts) 
+  args.dense_layers = len(node_counts) # Update the argument that holds the amount of dense layers to correspond to the new amount
+else:
+  node_counts = [dense_layer_nodes for _ in range(dense_layers)]
 
 logger.INFO(f"Training {run_name}...")
 
@@ -156,6 +171,7 @@ else:
 # ---------------------------
 model = tf.keras.Sequential()
 
+# Convolutional layers
 # Add first conv layer
 model.add(tf.keras.layers.Conv1D(conv_filters, conv_kernel_size, padding=conv_padding, activation=activation, input_shape=input_shape))
 
@@ -168,8 +184,9 @@ model.add(tf.keras.layers.Flatten())
   # If not using conv layers, flatten like this (first layer, is it really needed?)
   # model.add(tf.keras.layers.Flatten(input_shape=input_shape))
 
-model.add(tf.keras.layers.Dense(128, activation=activation))
-model.add(tf.keras.layers.Dense(10, activation=activation))
+# Dense layers
+for node_count in node_counts:
+  model.add(tf.keras.layers.Dense(node_count, activation=activation))
 
 # Output layer
 model.add(tf.keras.layers.Dense(1))
