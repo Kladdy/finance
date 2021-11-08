@@ -31,6 +31,13 @@ def get_results_filepath(run_id):
     results_filepath = f"{results_folder_name}/{results_filename}"
     return results_filepath
     
+def check_if_data_is_prepared(collector, period, interval, start, stop, data_length):
+    logger.INFO(f"Checking if dataset exists...")
+
+    npz_file = f"{collector}_period{period}_interval{interval}_start{start}_end{stop}_datalength{data_length}.npz"
+    npz_filepath = f"{data_folder_name}/{npz_file}"
+
+    return os.path.isfile(npz_filepath) 
 
 def load_data(collector, period, interval, start, stop, data_length, dataset):
     assert dataset in ["training", "validation", "testing"]

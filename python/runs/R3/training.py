@@ -3,7 +3,7 @@ import sys
 from tensorflow import python
 from tensorflow.python.keras import activations, callbacks
 from tensorflow.python.ops.gen_batch_ops import batch
-from toolbox import logger, load_training_data, load_validation_data, mkdir, get_model_filepath, load_evaluation_data, get_results_filepath, Quantile
+from toolbox import logger, load_training_data, load_validation_data, mkdir, get_model_filepath, load_evaluation_data, get_results_filepath, check_if_data_is_prepared, Quantile
 import wandb
 from wandb.keras import WandbCallback
 import numpy as np
@@ -22,6 +22,8 @@ parser.add_argument('--start', type=str, help='the start date, ie 2021.04.29...'
 parser.add_argument('--stop', type=str, help='the stop date, ie 2021.05.28...')
 parser.add_argument('--data_length', type=int, help='the amount of samples to have in the trace, ie 20')
 parser.add_argument('--batch_size', type=int, help='the batch size, ie 64')
+parser.add_argument('--learning_rate', type=float, help='the learning rate, ie 0.000001')
+parser.add_argument('--epochs', type=int, help='the amount of epochs, ie 50')
 parser.add_argument('--conv_start', dest='conv_start', action='store_true', help='whether or not the model starts with convolutional layers')
 parser.set_defaults(conv_start=False)
 
@@ -33,6 +35,8 @@ start = args.start
 stop = args.stop
 data_length = args.data_length
 batch_size = args.batch_size
+learning_rate = args.learning_rate
+epochs = args.epochs
 conv_start = args.conv_start
 
 # Get argument string (for calling the evaluator)
@@ -43,10 +47,15 @@ logger.INFO(f"Training {run_name}...")
 mkdir(model_folder_name)
 
 # Define constants
-learning_rate=0.000001
-epochs = 50
 es_patience = 3
-es_min_delta = 0
+es_min_delta = 0.0001
+
+# Make sure data exists
+if not check_if_data_is_prepared(collector, period, interval, start, stop, data_length):
+  logger.INFO("Data has not been prepared. Generating new data...")
+  os.system(f"python prepare_data.py --collector={collector} --period={period} --interval={interval} --start={start} --stop={stop} --data_length={data_length}")
+else:
+  logger.INFO("Data exists! Proceeding...")
 
 # Load training and validation data and convert to dataset tensors
 training_data, training_labels = load_training_data(collector, period, interval, start, stop, data_length)
@@ -68,19 +77,20 @@ training_dataset = training_dataset.shuffle(100).batch(batch_size)
 validation_dataset = validation_dataset.batch(batch_size)
 
 # Initialize wandb
-run = wandb.init(project="finance", entity="sigfid", group=run_name)
-wandb.config = {
-  learning_rate: learning_rate,
-  epochs: epochs,
-  collector: collector,
-  period: period,
-  interval: interval,
-  start: start,
-  stop: stop,
-  data_length: data_length,
-  batch_size: batch_size,
-  conv_start: conv_start
-}
+run = wandb.init(project="finance", entity="sigfid", group=run_name, config=args)
+# wandb.config = {
+#   learning_rate: learning_rate,
+#   epochs: epochs,
+#   collector: collector,
+#   period: period,
+#   interval: interval,
+#   start: start,
+#   stop: stop,
+#   data_length: data_length,
+#   batch_size: batch_size,
+#   conv_start: conv_start
+# }
+
 
 # Get the run id
 run_id = wandb.run.name
