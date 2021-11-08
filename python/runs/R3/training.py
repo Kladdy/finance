@@ -44,7 +44,7 @@ mkdir(model_folder_name)
 
 # Define constants
 learning_rate=0.000001
-epochs = 1
+epochs = 3
 
 # Load training and validation data and convert to dataset tensors
 training_data, training_labels = load_training_data(collector, period, interval, start, stop, data_length)

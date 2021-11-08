@@ -119,7 +119,6 @@ testing_data = data[testing_indicies, :]
 testing_labels = labels[testing_indicies]
 
 testing_tickers = tickers[testing_indicies]
-print(tickers)
 testing_last_data_values = last_data_values[testing_indicies]
 
 # # Save data as npz

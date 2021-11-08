@@ -5,8 +5,10 @@ About
     significantly different from the smaller companies. 
 
 Example
-    python prepare_data.py --collector=C1 --period=1mo --interval=90m --start=2021.09.27 --stop=2021.10.27 --data_length=10
-    python training.py --collector=C1 --period=1mo --interval=90m --start=2021.09.27 --stop=2021.10.27 --data_length=10 --batch_size=16 
-    python evaluation.py --collector=C1 --period=1mo --interval=90m --start=2021.09.27 --stop=2021.10.27 --data_length=10 --batch_size=16 
+    python prepare_data.py --collector=C1 --period=1y --interval=1d --start=2020.11.05 --stop=2021.11.05 --data_length=7
+    python training.py --collector=C1 --period=1y --interval=1d --start=2020.11.05 --stop=2021.11.05 --data_length=7 --batch_size=16 
+    python evaluation.py --collector=C1 --period=1y --interval=1d --start=2020.11.05 --stop=2021.11.05 --data_length=7 --batch_size=16 
 
     Add --conv_start to training or evaluation if model starts with convolutional layers
+    
+    
