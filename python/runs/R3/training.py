@@ -8,7 +8,7 @@ import wandb
 from wandb.keras import WandbCallback
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.callbacks import ModelCheckpoint, EarlyStopping
 import argparse
 from constants import run_name, model_folder_name
 from PIL import Image
@@ -44,7 +44,9 @@ mkdir(model_folder_name)
 
 # Define constants
 learning_rate=0.000001
-epochs = 3
+epochs = 50
+es_patience = 3
+es_min_delta = 0
 
 # Load training and validation data and convert to dataset tensors
 training_data, training_labels = load_training_data(collector, period, interval, start, stop, data_length)
@@ -106,10 +108,11 @@ model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate),
               loss=tf.keras.losses.MeanAbsoluteError())
 
 # Callbacks
-modelCheckpoint = ModelCheckpoint(model_filepath, save_best_only=True, monitor='val_loss', 
+es = EarlyStopping(monitor="val_loss", patience=es_patience, min_delta=es_min_delta, verbose=1),
+mc = ModelCheckpoint(model_filepath, save_best_only=True, monitor='val_loss', 
                                     verbose=0, mode='auto', save_weights_only=False)
-wandbCallback = WandbCallback()
-callback_list = [modelCheckpoint, wandbCallback]
+wb = WandbCallback(save_model=False)
+callback_list = [es, mc, wb]
 
 # Perform the fit
 model.fit(x=training_dataset, validation_data=validation_dataset,
